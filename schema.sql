@@ -1,18 +1,18 @@
--- CREATING 'EMPLOYEES' DATABASE
+----- CREATING 'EMPLOYEES' DATABASE -----
 DROP DATABASE IF EXISTS employees_DB;
 
 CREATE DATABASE employees_DB;
 
-use employees_DB;
+USE employees_DB;
 
--- DEPARTMENT TABLE --
+----- DEPARTMENT TABLE -----
 CREATE TABLE department (
     id INT NOT NULL AUTO_INCREMENT,
     name VARCHAR(30) NOT NULL,
     PRIMARY KEY (id)
 );
 
--- ROLE TABLE --
+----- ROLE TABLE -----
 CREATE TABLE role (
     id INT NOT NULL AUTO_INCREMENT,
     title VARCHAR(30) NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE role (
     FOREIGN KEY (department_id) REFERENCES department(id) ON DELETE CASCADE
 );
 
--- EMPLOYEE TABLE --
+----- EMPLOYEE TABLE -----
 CREATE TABLE employee (
     id INT NOT NULL AUTO_INCREMENT,
     first_name VARCHAR(30) NOT NULL,
