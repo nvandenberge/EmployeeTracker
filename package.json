@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/nvandenberge/EmployeeTracker#readme",
   "dependencies": {
-    "console-table": "^0.1.2",
+    "console.table": "^0.10.0",
     "inquirer": "^7.3.3",
     "mysql": "^2.18.1"
   }

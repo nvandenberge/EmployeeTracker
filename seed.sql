@@ -36,10 +36,10 @@ VALUES (5, "Legal Lead", 150000, 5);
 
 -- ALL OTHER ROLES
 INSERT INTO role (id, title, salary, department_id)
-VALUES (6, "Engineer", 95000, 1);
+VALUES (6, "Engineer I", 95000, 1);
 
 INSERT INTO role (id, title, salary, department_id)
-VALUES (7, "Engineer", 97000, 1);
+VALUES (7, "Engineer II", 97000, 1);
 
 INSERT INTO role (id, title, salary, department_id)
 VALUES (8, "Sales Analyst I", 81000, 2);
