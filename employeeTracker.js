@@ -59,7 +59,7 @@ const mainMenu = () => {
           viewAllRoles();
           break;
         case "View All Departments":
-          viewAllDept();
+          viewAllDepts();
           break;
         case "Add Employee":
           addEmployee();
@@ -111,5 +111,13 @@ const viewAllRoles = async () => {
   const allRoles = await getResults(query);
   console.log("\n");
   console.table(allRoles);
+  mainMenu();
+};
+
+const viewAllDepts = async () => {
+  let query = "SELECT id, name AS Name from department";
+  const allDepts = await getResults(query);
+  console.log("\n");
+  console.table(allDepts);
   mainMenu();
 };
