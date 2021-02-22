@@ -16,6 +16,15 @@ db.connect(function (err) {
   mainMenu();
 });
 
+// Converts the query function to a promise
+// Needs to be decalred after db connection is established
+const queryAsync = util.promisify(db.query).bind(db);
+
+const getResults = async (query) => {
+  const results = await queryAsync(query);
+  return results;
+};
+
 const mainMenu = () => {
   inquirer
     .prompt([
@@ -73,4 +82,20 @@ const mainMenu = () => {
           console.log("Have a nice day!");
       }
     });
+};
+
+const viewAllEmployees = async () => {
+  let query = `SELECT e.id, e.first_name AS 'First Name', e.last_name AS 'Last Name', 
+  role.title, department.name AS department, role.salary, concat(m.first_name, ' ' ,  m.last_name) AS manager 
+  FROM employee e 
+  LEFT JOIN employee m 
+  ON e.manager_id = m.id 
+  INNER JOIN role 
+  ON e.role_id = role.id 
+  INNER JOIN department ON role.department_id = department.id 
+  ORDER BY ID ASC;`;
+  const allEmployees = await getResults(query);
+  console.log("\n");
+  console.table(allEmployees);
+  mainMenu();
 };
