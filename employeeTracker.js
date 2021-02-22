@@ -25,6 +25,12 @@ const getResults = async (query) => {
   return results;
 };
 
+const getRoles = async () => {
+  let query = "SELECT title FROM role";
+  const roles = await queryAsync(query);
+  return roles.map((role) => role.title);
+};
+
 const mainMenu = () => {
   inquirer
     .prompt([
@@ -97,5 +103,13 @@ const viewAllEmployees = async () => {
   const allEmployees = await getResults(query);
   console.log("\n");
   console.table(allEmployees);
+  mainMenu();
+};
+
+const viewAllRoles = async () => {
+  let query = "SELECT id, title AS Title from role";
+  const allRoles = await getResults(query);
+  console.log("\n");
+  console.table(allRoles);
   mainMenu();
 };
