@@ -79,6 +79,7 @@ const mainMenu = () => {
         choices: [
           "View All Employees",
           "View All Employees By Department",
+          "View All Employees By Role",
           "View All Roles",
           "View All Departments",
           "Add Employee",
@@ -97,6 +98,9 @@ const mainMenu = () => {
           break;
         case "View All Employees By Department":
           viewAllEmployeesByDept();
+          break;
+        case "View All Employees By Role":
+          viewAllEmployeesByRole();
           break;
         case "View All Roles":
           viewAllRoles();
@@ -168,6 +172,28 @@ const viewAllEmployeesByDept = async () => {
         const employeesByDept = await getResults(query, [response.deptID])
         console.log("\n");
         console.table(employeesByDept);
+        mainMenu();
+      });
+};
+
+const viewAllEmployeesByRole = async () => {
+  const roles = await getRoles();
+  inquirer
+    .prompt({
+      type: "list",
+      name: "roleID",
+      message: "Select A Role to View Employees: ",
+      choices: [...roles],
+    })
+    .then(async (response) => {
+      let query = `SELECT e.id, e.first_name AS 'First Name', e.last_name AS 'Last Name', role.title AS Title 
+      FROM employee e 
+      INNER JOIN role ON e.role_id = role.id 
+      WHERE role.id = ? 
+      ORDER BY ID ASC;`;
+      const employeesByRole = await getResults(query, [response.roleID])
+        console.log("\n");
+        console.table(employeesByRole);
         mainMenu();
       });
 };
