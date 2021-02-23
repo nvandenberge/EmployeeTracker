@@ -88,6 +88,7 @@ const mainMenu = () => {
           "Update Employee's Role",
           "Remove Employee",
           "Remove Department",
+          "Remove Role",
           "Exit",
         ],
       },
@@ -129,6 +130,7 @@ const mainMenu = () => {
           break;
         case "Remove Role":
           removeRole();
+          break;
         case "Exit":
           console.log("Closing Employee Tracker...");
           db.end();
@@ -395,6 +397,39 @@ const removeDepartment = async () => {
           const departmentRemoval = await getResults(query, [response.deptID]);
           departmentRemoval;
           console.log('Department has been removed!');
+          console.log("\n");
+          mainMenu();
+       } else {
+        console.log("\n");
+        mainMenu();
+      }
+    });
+};
+
+const removeRole = async () => {
+  const roles = await getRoles();
+  inquirer
+    .prompt([
+      {
+        type: "list",
+        name: "roleID",
+        message: "Select a Role to Remove: ",
+        choices: [...roles],
+      },
+      {
+        type: "list",
+        name: "confirm",
+        message: `Confirm Deletion of Selected Role:`,
+        choices: ["NO", "YES"],
+      }
+    ])
+    .then(async (response) => {
+      console.log(response)
+      if (response.confirm === "YES") {
+        let query = "DELETE FROM role WHERE role.id = ?";
+          const roleRemoval = await getResults(query, [response.roleID]);
+          roleRemoval;
+          console.log('Role has been removed!');
           console.log("\n");
           mainMenu();
        } else {
