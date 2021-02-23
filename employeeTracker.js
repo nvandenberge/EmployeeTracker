@@ -26,27 +26,30 @@ db.connect(function (err) {
 // Needs to be decalred after db connection is established
 const queryAsync = util.promisify(db.query).bind(db);
 
-const getResults = async (query) => {
-  const results = await queryAsync(query);
+const getResults = async (query, values = []) => {
+  const results = await queryAsync(query, values);
   return results;
 };
 
 const getRoles = async () => {
   let query = "SELECT id, title FROM role";
   const roles = await queryAsync(query);
-  return roles.map((role) => ({value: role.id, name: role.title }));
+  return roles.map((role) => ({ value: role.id, name: role.title }));
 };
 
 const getDepartments = async () => {
   let query = "SELECT id, name FROM department";
   const depts = await queryAsync(query);
-  return depts.map((dept) => ({value: dept.id, name: dept.name }));
+  return depts.map((dept) => ({ value: dept.id, name: dept.name }));
 };
 
 const getManagers = async () => {
   let query = "SELECT * FROM employee WHERE manager_id IS NULL";
   const managers = await queryAsync(query);
-  return managers.map((manager) => ({value: manager.id, name: `${manager.first_name} ${manager.last_name}`}));
+  return managers.map((manager) => ({
+    value: manager.id,
+    name: `${manager.first_name} ${manager.last_name}`,
+  }));
 };
 
 const mainMenu = () => {
@@ -100,7 +103,7 @@ const mainMenu = () => {
         case "Remove Role":
           removeRole();
         case "Exit":
-          console.log("Closing Employee Tracker...")
+          console.log("Closing Employee Tracker...");
           db.end();
         default:
           console.log("Have a nice day!");
@@ -171,16 +174,53 @@ const addEmployee = async () => {
       },
     ])
     .then((response) => {
-      let query =
-        "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)";
+      let query = "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)";
       db.query(
         query,
-        [response.empFirstName, response.empLastName, response.empRole, response.empManager],
+        [
+          response.empFirstName,
+          response.empLastName,
+          response.empRole,
+          response.empManager,
+        ],
         (err, res) => {
           if (err) throw err;
           console.log(`${res.empFirstName} ${res.empLastName} has been added to Employees!`);
           mainMenu();
         }
       );
+    });
+};
+
+const addRole = async () => {
+  const depts = await getDepartments();
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "roleTitle",
+        message: "Title for new role? ",
+      },
+      {
+        type: "input",
+        name: "roleSalary",
+        message: "Salary for new role? ",
+      },
+      {
+        type: "list",
+        name: "roleDept",
+        message: "Which department does this new role belong in? ",
+        choices: [...depts],
+      },
+    ])
+    .then((response) => {
+      let query = "INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)";
+      getResults(query, [
+        response.roleTitle,
+        response.roleSalary,
+        response.roleDept,
+      ]);
+      console.log(`${response.roleTitle} has been added to Roles`);
+      mainMenu();
     });
 };
