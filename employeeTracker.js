@@ -78,6 +78,7 @@ const mainMenu = () => {
         message: "What would you like to do?",
         choices: [
           "View All Employees",
+          "View All Employees By Department",
           "View All Roles",
           "View All Departments",
           "Add Employee",
@@ -93,6 +94,9 @@ const mainMenu = () => {
       switch (response.choice) {
         case "View All Employees":
           viewAllEmployees();
+          break;
+        case "View All Employees By Department":
+          viewAllEmployeesByDept();
           break;
         case "View All Roles":
           viewAllRoles();
@@ -143,6 +147,29 @@ const viewAllEmployees = async () => {
   console.log("\n");
   console.table(allEmployees);
   mainMenu();
+};
+
+const viewAllEmployeesByDept = async () => {
+  const depts = await getDepartments();
+  inquirer
+    .prompt({
+      type: "list",
+      name: "deptID",
+      message: "Select A Department to View Employees: ",
+      choices: [...depts],
+    })
+    .then(async (response) => {
+      let query = `SELECT e.id, e.first_name AS 'First Name', e.last_name AS 'Last Name', role.title AS Title, department.name AS Department
+        FROM employee e
+        INNER JOIN role ON e.role_id = role.id
+        INNER JOIN department ON role.department_id = department.id
+        WHERE department.id = ?
+        ORDER BY ID ASC;`;
+        const employeesByDept = await getResults(query, [response.deptID])
+        console.log("\n");
+        console.table(employeesByDept);
+        mainMenu();
+      });
 };
 
 const viewAllRoles = async () => {
@@ -203,6 +230,7 @@ const addEmployee = async () => {
       console.log(
         `${response.empFirstName} ${response.empLastName} has been added to Employees!`
       );
+      console.log("\n");
       mainMenu();
     });
 };
@@ -219,6 +247,7 @@ const addDepartment = () => {
       let query = "INSERT INTO department (name) VALUES (?)";
       getResults(query, [response.deptName]);
       console.log(`${response.deptName} has been added to Departments`);
+      console.log("\n");
       mainMenu();
     });
 };
