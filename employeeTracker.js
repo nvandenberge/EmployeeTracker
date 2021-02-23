@@ -34,6 +34,12 @@ const getResults = async (query, values = []) => {
   return results;
 };
 
+const getEmployeeNames = async () => {
+  let query = "SELECT id, first_name, last_name FROM employee;";
+  const allEmployees = await queryAsync(query);
+  return allEmployees.map((employee) => ({value: employee.id, name: `${employee.first_name} ${employee.last_name}`}))
+}
+
 const getRoles = async () => {
   let query = "SELECT id, title FROM role";
   const roles = await queryAsync(query);
@@ -94,7 +100,7 @@ const mainMenu = () => {
         case "Add Role":
           addRole();
           break;
-        case "Update Employee Role":
+        case "Update Employee's Role":
           updateEmployeeRole();
           break;
         case "Remove Employee":
@@ -240,6 +246,34 @@ const addRole = async () => {
         response.roleDept,
       ]);
       console.log(`${response.roleTitle} has been added to Roles`);
+      mainMenu();
+    });
+};
+
+const updateEmployeeRole = async () => {
+  const employeeNames = await getEmployeeNames();
+  const roles = await getRoles();
+  inquirer
+    .prompt([{
+      type: "list",
+      name: "empID",
+      message: "Select an Employee to Update Role: ",
+      choices: [...employeeNames],
+    }, 
+    {
+      type: "list",
+      name: "roleID",
+      message: "Select Their New Role?",
+      choices: [...roles]
+    }
+  ])
+    .then(async (response) => {
+      console.log("\n");
+      // let nameQuery = `SELECT first_name, last_name FROM employee WHERE employee.id=${response.empID}`
+      // let employeeName = await getResults(nameQuery);
+      let query = "UPDATE employee SET role_id=? WHERE employee.id=?";
+      getResults(query, [response.roleID, response.empID]);
+      console.log(`Employee's Role has been updated!`);
       mainMenu();
     });
 };
