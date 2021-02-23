@@ -78,8 +78,8 @@ const mainMenu = () => {
         message: "What would you like to do?",
         choices: [
           "View All Employees",
-          "View All Employees By Department",
-          "View All Employees By Role",
+          "View Employees By Department",
+          "View Employees By Role",
           "View All Roles",
           "View All Departments",
           "Add Employee",
@@ -87,6 +87,7 @@ const mainMenu = () => {
           "Add Role",
           "Update Employee's Role",
           "Remove Employee",
+          "Remove Department",
           "Exit",
         ],
       },
@@ -96,11 +97,11 @@ const mainMenu = () => {
         case "View All Employees":
           viewAllEmployees();
           break;
-        case "View All Employees By Department":
-          viewAllEmployeesByDept();
+        case "View Employees By Department":
+          viewEmployeesByDept();
           break;
-        case "View All Employees By Role":
-          viewAllEmployeesByRole();
+        case "View Employees By Role":
+          viewEmployeesByRole();
           break;
         case "View All Roles":
           viewAllRoles();
@@ -138,14 +139,14 @@ const mainMenu = () => {
 };
 
 const viewAllEmployees = async () => {
-  let query = `SELECT e.id, e.first_name AS 'First Name', e.last_name AS 'Last Name', 
-  role.title, department.name AS department, role.salary, concat(m.first_name, ' ' ,  m.last_name) AS manager 
-  FROM employee e 
-  LEFT JOIN employee m 
-  ON e.manager_id = m.id 
-  INNER JOIN role 
-  ON e.role_id = role.id 
-  INNER JOIN department ON role.department_id = department.id 
+  let query = `SELECT e.id, e.first_name AS 'First Name', e.last_name AS 'Last Name',
+  role.title, department.name AS department, role.salary, concat(m.first_name, ' ' ,  m.last_name) AS manager
+  FROM employee e
+  LEFT JOIN employee m
+  ON e.manager_id = m.id
+  INNER JOIN role
+  ON e.role_id = role.id
+  INNER JOIN department ON role.department_id = department.id
   ORDER BY ID ASC;`;
   const allEmployees = await getResults(query);
   console.log("\n");
@@ -153,7 +154,7 @@ const viewAllEmployees = async () => {
   mainMenu();
 };
 
-const viewAllEmployeesByDept = async () => {
+const viewEmployeesByDept = async () => {
   const depts = await getDepartments();
   inquirer
     .prompt({
@@ -176,7 +177,7 @@ const viewAllEmployeesByDept = async () => {
       });
 };
 
-const viewAllEmployeesByRole = async () => {
+const viewEmployeesByRole = async () => {
   const roles = await getRoles();
   inquirer
     .prompt({
@@ -186,10 +187,10 @@ const viewAllEmployeesByRole = async () => {
       choices: [...roles],
     })
     .then(async (response) => {
-      let query = `SELECT e.id, e.first_name AS 'First Name', e.last_name AS 'Last Name', role.title AS Title 
-      FROM employee e 
-      INNER JOIN role ON e.role_id = role.id 
-      WHERE role.id = ? 
+      let query = `SELECT e.id, e.first_name AS 'First Name', e.last_name AS 'Last Name', role.title AS Title
+      FROM employee e
+      INNER JOIN role ON e.role_id = role.id
+      WHERE role.id = ?
       ORDER BY ID ASC;`;
       const employeesByRole = await getResults(query, [response.roleID])
         console.log("\n");
@@ -332,8 +333,6 @@ const updateEmployeeRole = async () => {
     ])
     .then(async (response) => {
       console.log("\n");
-      // let nameQuery = `SELECT first_name, last_name FROM employee WHERE employee.id=${response.empID}`
-      // let employeeName = await getResults(nameQuery);
       let query = "UPDATE employee SET role_id=? WHERE employee.id=?";
       getResults(query, [response.roleID, response.empID]);
       console.log(`Employee's Role has been updated!`);
@@ -354,7 +353,7 @@ const removeEmployee = async () => {
       {
         type: "list",
         name: "confirm",
-        message: "Confirm Removal:",
+        message: "Confirm Removal of Selected Employee:",
         choices: ["NO", "YES"],
       },
     ])
@@ -367,6 +366,38 @@ const removeEmployee = async () => {
         console.log("\n");
         mainMenu();
       } else {
+        console.log("\n");
+        mainMenu();
+      }
+    });
+};
+
+const removeDepartment = async () => {
+  const depts = await getDepartments();
+  inquirer
+    .prompt([
+      {
+        type: "list",
+        name: "deptID",
+        message: "Select a Department to Remove: ",
+        choices: [...depts],
+      },
+      {
+        type: "list",
+        name: "confirm",
+        message: `Confirm Deletion of Selected Department:`,
+        choices: ["NO", "YES"],
+      }
+    ])
+    .then(async (response) => {
+      if (response.confirm === "YES") {
+        let query = "DELETE FROM department WHERE department.id = ?";
+          const departmentRemoval = await getResults(query, [response.deptID]);
+          departmentRemoval;
+          console.log('Department has been removed!');
+          console.log("\n");
+          mainMenu();
+       } else {
         console.log("\n");
         mainMenu();
       }
