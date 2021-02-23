@@ -31,11 +31,10 @@ const queryAsync = util.promisify(db.query).bind(db);
 
 const getResults = async (query, values = []) => {
   try {
-  const results = await queryAsync(query, values);
-  return results;
-  }
-  catch {
-    console.log("Yikes, something went wrong!")
+    const results = await queryAsync(query, values);
+    return results;
+  } catch {
+    console.log("Yikes, something went wrong!");
     db.end();
   }
 };
@@ -85,6 +84,7 @@ const mainMenu = () => {
           "Add Department",
           "Add Role",
           "Update Employee's Role",
+          "Remove Employee",
           "Exit",
         ],
       },
@@ -283,5 +283,37 @@ const updateEmployeeRole = async () => {
       getResults(query, [response.roleID, response.empID]);
       console.log(`Employee's Role has been updated!`);
       mainMenu();
+    });
+};
+
+const removeEmployee = async () => {
+  const employees = await getEmployeeNames();
+  inquirer
+    .prompt([
+      {
+        type: "list",
+        name: "name",
+        message: "Select an Employee to Remove: ",
+        choices: [...employees],
+      },
+      {
+        type: "list",
+        name: "confirm",
+        message: "Confirm Removal:",
+        choices: ["NO", "YES"],
+      },
+    ])
+    .then(async (response) => {
+      if (response.confirm === "YES") {
+        let query = "DELETE FROM employee WHERE employee.id = ?";
+        const employeeRemoval = await getResults(query, [response.name]);
+        employeeRemoval;
+        console.log("Emnployee has been removed!");
+        console.log("\n");
+        mainMenu();
+      } else {
+        console.log("\n");
+        mainMenu();
+      }
     });
 };
