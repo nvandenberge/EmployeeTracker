@@ -29,6 +29,7 @@ db.connect(function (err) {
 // Needs to be decalred after db connection is established
 const queryAsync = util.promisify(db.query).bind(db);
 
+// Function receives query string/prompt responses and gets data from database
 const getResults = async (query, values = []) => {
   try {
     const results = await queryAsync(query, values);
@@ -38,7 +39,7 @@ const getResults = async (query, values = []) => {
     db.end();
   }
 };
-
+// Get list of employee names and IDs
 const getEmployeeNames = async () => {
   let query = "SELECT id, first_name, last_name FROM employee;";
   const allEmployees = await queryAsync(query);
@@ -48,18 +49,21 @@ const getEmployeeNames = async () => {
   }));
 };
 
+// Get list of roles and IDs
 const getRoles = async () => {
   let query = "SELECT id, title FROM role";
   const roles = await queryAsync(query);
   return roles.map((role) => ({ value: role.id, name: role.title }));
 };
 
+// Get list of department names and IDs
 const getDepartments = async () => {
   let query = "SELECT id, name FROM department";
   const depts = await queryAsync(query);
   return depts.map((dept) => ({ value: dept.id, name: dept.name }));
 };
 
+// Get list of manager names and IDs
 const getManagers = async () => {
   let query = "SELECT * FROM employee WHERE manager_id IS NULL";
   const managers = await queryAsync(query);
@@ -69,6 +73,7 @@ const getManagers = async () => {
   }));
 };
 
+// Available actions
 const mainMenu = () => {
   inquirer
     .prompt([
@@ -87,6 +92,7 @@ const mainMenu = () => {
           "Add Department",
           "Add Role",
           "Update Employee's Role",
+          "Update Employee's Manager",
           "Remove Employee",
           "Remove Department",
           "Remove Role",
@@ -125,6 +131,9 @@ const mainMenu = () => {
           break;
         case "Update Employee's Role":
           updateEmployeeRole();
+          break;
+        case "Update Employee's Manager":
+          updateEmployeeManager();
           break;
         case "Remove Employee":
           removeEmployee();
@@ -314,17 +323,17 @@ const addRole = async () => {
       {
         type: "input",
         name: "roleTitle",
-        message: "Title for new role? ",
+        message: "Title for new role: ",
       },
       {
         type: "input",
         name: "roleSalary",
-        message: "Salary for new role? ",
+        message: "Salary for new role: ",
       },
       {
         type: "list",
         name: "roleDept",
-        message: "Which department does this new role belong in? ",
+        message: "Which department does this new role belong in: ",
         choices: [...depts],
       },
     ])
@@ -355,7 +364,7 @@ const updateEmployeeRole = async () => {
       {
         type: "list",
         name: "roleID",
-        message: "Select Their New Role?",
+        message: "Select Their New Role:",
         choices: [...roles],
       },
     ])
@@ -364,6 +373,35 @@ const updateEmployeeRole = async () => {
       let query = "UPDATE employee SET role_id=? WHERE employee.id=?";
       getResults(query, [response.roleID, response.empID]);
       console.log(`Employee's Role has been updated!`);
+      console.log("\n");
+      mainMenu();
+    });
+};
+
+const updateEmployeeManager = async () => {
+  const employeeNames = await getEmployeeNames();
+  const managers = await getManagers();
+  inquirer
+    .prompt([
+      {
+        type: "list",
+        name: "empID",
+        message: "Select an Employee to Update Manager: ",
+        choices: [...employeeNames],
+      },
+      {
+        type: "list",
+        name: "managerID",
+        message: "Select Their New Manager: ",
+        choices: [...managers],
+      },
+    ])
+    .then(async (response) => {
+      console.log("\n");
+      let query = `UPDATE employee SET manager_id=${response.managerID} WHERE employee.id=${response.empID}`;
+      getResults(query);
+      console.log(`Employee's Manager has been updated!`);
+      console.log("\n");
       mainMenu();
     });
 };
