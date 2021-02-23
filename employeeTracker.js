@@ -3,6 +3,12 @@ const inquirer = require("inquirer");
 const consoleTable = require("console.table");
 const util = require("util");
 
+// Validate the response contains letters only
+const letterValidation = (input) =>
+  !/^[A-Za-z_ ]+$/gi.test(input)
+    ? "Please enter a valid name (letters only)"
+    : true;
+
 const db = mysql.createConnection({
   host: "localhost",
   port: 3306,
@@ -26,9 +32,21 @@ const getResults = async (query) => {
 };
 
 const getRoles = async () => {
-  let query = "SELECT title FROM role";
+  let query = "SELECT id, title FROM role";
   const roles = await queryAsync(query);
-  return roles.map((role) => role.title);
+  return roles.map((role) => ({value: role.id, name: role.title }));
+};
+
+const getDepartments = async () => {
+  let query = "SELECT id, name FROM department";
+  const depts = await queryAsync(query);
+  return depts.map((dept) => ({value: dept.id, name: dept.name }));
+};
+
+const getManagers = async () => {
+  let query = "SELECT * FROM employee WHERE manager_id IS NULL";
+  const managers = await queryAsync(query);
+  return managers.map((manager) => ({value: manager.id, name: `${manager.first_name} ${manager.last_name}`}));
 };
 
 const mainMenu = () => {
@@ -120,4 +138,49 @@ const viewAllDepts = async () => {
   console.log("\n");
   console.table(allDepts);
   mainMenu();
+};
+
+const addEmployee = async () => {
+  const roles = await getRoles();
+  const managers = await getManagers();
+  inquirer
+    .prompt([
+      {
+        type: "name",
+        name: "empFirstName",
+        message: "New Employee's First Name: ",
+        validate: letterValidation,
+      },
+      {
+        type: "name",
+        name: "empLastName",
+        message: "New Employee's Last Name: ",
+        validate: letterValidation,
+      },
+      {
+        type: "list",
+        name: "empRole",
+        message: "New Employee's Role: ",
+        choices: [...roles],
+      },
+      {
+        type: "list",
+        name: "empManager",
+        message: "New Employee's Manager: ",
+        choices: [...managers],
+      },
+    ])
+    .then((response) => {
+      let query =
+        "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)";
+      db.query(
+        query,
+        [response.empFirstName, response.empLastName, response.empRole, response.empManager],
+        (err, res) => {
+          if (err) throw err;
+          console.log(`${res.empFirstName} ${res.empLastName} has been added to Employees!`);
+          mainMenu();
+        }
+      );
+    });
 };
