@@ -30,15 +30,24 @@ db.connect(function (err) {
 const queryAsync = util.promisify(db.query).bind(db);
 
 const getResults = async (query, values = []) => {
+  try {
   const results = await queryAsync(query, values);
   return results;
+  }
+  catch {
+    console.log("Yikes, something went wrong!")
+    db.end();
+  }
 };
 
 const getEmployeeNames = async () => {
   let query = "SELECT id, first_name, last_name FROM employee;";
   const allEmployees = await queryAsync(query);
-  return allEmployees.map((employee) => ({value: employee.id, name: `${employee.first_name} ${employee.last_name}`}))
-}
+  return allEmployees.map((employee) => ({
+    value: employee.id,
+    name: `${employee.first_name} ${employee.last_name}`,
+  }));
+};
 
 const getRoles = async () => {
   let query = "SELECT id, title FROM role";
@@ -183,21 +192,18 @@ const addEmployee = async () => {
       },
     ])
     .then((response) => {
-      let query = "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)";
-      db.query(
-        query,
-        [
-          response.empFirstName,
-          response.empLastName,
-          response.empRole,
-          response.empManager,
-        ],
-        (err, res) => {
-          if (err) throw err;
-          console.log(`${res.empFirstName} ${res.empLastName} has been added to Employees!`);
-          mainMenu();
-        }
+      let query =
+        "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)";
+      getResults(query, [
+        response.empFirstName,
+        response.empLastName,
+        response.empRole,
+        response.empManager,
+      ]);
+      console.log(
+        `${response.empFirstName} ${response.empLastName} has been added to Employees!`
       );
+      mainMenu();
     });
 };
 
@@ -239,7 +245,8 @@ const addRole = async () => {
       },
     ])
     .then((response) => {
-      let query = "INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)";
+      let query =
+        "INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)";
       getResults(query, [
         response.roleTitle,
         response.roleSalary,
@@ -254,19 +261,20 @@ const updateEmployeeRole = async () => {
   const employeeNames = await getEmployeeNames();
   const roles = await getRoles();
   inquirer
-    .prompt([{
-      type: "list",
-      name: "empID",
-      message: "Select an Employee to Update Role: ",
-      choices: [...employeeNames],
-    }, 
-    {
-      type: "list",
-      name: "roleID",
-      message: "Select Their New Role?",
-      choices: [...roles]
-    }
-  ])
+    .prompt([
+      {
+        type: "list",
+        name: "empID",
+        message: "Select an Employee to Update Role: ",
+        choices: [...employeeNames],
+      },
+      {
+        type: "list",
+        name: "roleID",
+        message: "Select Their New Role?",
+        choices: [...roles],
+      },
+    ])
     .then(async (response) => {
       console.log("\n");
       // let nameQuery = `SELECT first_name, last_name FROM employee WHERE employee.id=${response.empID}`
