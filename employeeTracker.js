@@ -3,6 +3,9 @@ const inquirer = require("inquirer");
 const consoleTable = require("console.table");
 const util = require("util");
 
+// Validate the response is not empty
+const inputValidation = (input) =>
+  !input ? "Please provide a response" : true;
 // Validate the response contains letters only
 const letterValidation = (input) =>
   !/^[A-Za-z_ ]+$/gi.test(input)
@@ -189,6 +192,22 @@ const addEmployee = async () => {
           mainMenu();
         }
       );
+    });
+};
+
+const addDepartment = () => {
+  inquirer
+    .prompt({
+      type: "input",
+      name: "deptName",
+      message: "New Department Name: ",
+      validate: inputValidation,
+    })
+    .then((response) => {
+      let query = "INSERT INTO department (name) VALUES (?)";
+      getResults(query, [response.deptName]);
+      console.log(`${response.deptName} has been added to Departments`);
+      mainMenu();
     });
 };
 
