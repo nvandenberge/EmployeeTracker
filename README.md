@@ -1,15 +1,13 @@
 # EmployeeTracker
 A Node.js application that allows users to manage a database of employees. 
 
-https://drive.google.com/file/d/1gd5w2kunZl7eotCtQUYsWPkAcU2a82gX/view
-
 ![badge](https://img.shields.io/static/v1?label=license&message=MIT&color=green)
 
 ## Description
 
 The EmployeeTracker app allows users to view, add, update, and remove employees, departmentsd, and roles from a database connected to SQL. 
 
-![EmployeeTracker Preview](/assets/images/EmployeeTracker.gif)
+Demonstration: https://drive.google.com/file/d/12_Dclp7kW7Rn2ktYUnEqo5GLfnyNe1N_/view
 
 ## Table of Contents
 
